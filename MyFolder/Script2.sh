@@ -1,0 +1,10 @@
+principalId=`az ad signed-in-user show --query id -o tsv`
+az search service update --resource-group $resourceGroup --name $aiSearchName --set identity.type=SystemAssigned
+aiSearchManagedIdentityId=`az search service show --resource-group $resourceGroup --name "$aiSearchName" --query identity.principalId -o tsv`
+az cosmosdb sql role assignment create --account-name $cosmosDbAccountName --resource-group $resourceGroup --scope "/" --principal-id $principalId --role-definition-id "00000000-0000-0000-0000-000000000002"
+az role assignment create --assignee $aiSearchManagedIdentityId --role "Cosmos DB Account Reader Role" --scope "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/$resourceGroup/providers/Microsoft.DocumentDB/databaseAccounts/$cosmosDbAccountName"
+az cosmosdb sql role assignment create --account-name $cosmosDbAccountName --resource-group $resourceGroup --scope "/" --principal-id $aiSearchManagedIdentityId --role-definition-id "00000000-0000-0000-0000-000000000001"
+az cosmosdb sql role assignment create --account-name $cosmosDbAccountName --resource-group $resourceGroup --scope "/" --principal-id $aiSearchManagedIdentityId --role-definition-id "00000000-0000-0000-0000-000000000002"
+az role assignment create --assignee $aiSearchManagedIdentityId --role "Cognitive Services OpenAI User" --scope "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/$resourceGroup/providers/Microsoft.CognitiveServices/accounts/$aiFoundryName/projects/$aiProjectName"
+az role assignment create --assignee $aiSearchManagedIdentityId --role "Cognitive Services OpenAI User" --scope "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/$resourceGroup/providers/Microsoft.CognitiveServices/accounts/$aiFoundryName"
+az role assignment create --assignee $aiSearchManagedIdentityId --role "Cognitive Services Contributor" --scope "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/$resourceGroup/providers/Microsoft.CognitiveServices/accounts/$aiFoundryName/projects/$aiProjectName"
