@@ -14,7 +14,7 @@ import orjson  # Faster JSON library
 from openai import AzureOpenAI
 from app.tools.aiSearchTools import product_recommendations
 from app.tools.understandImage import get_image_description
-#from app.tools.singleAgentExample import generate_response
+from app.tools.singleAgentExample import generate_response
 from azure.core.credentials import AzureKeyCredential
 import asyncio
 import datetime
@@ -540,15 +540,15 @@ async def websocket_endpoint(websocket: WebSocket):
                 logger.error("Error parsing conversation history", exc_info=True)
                 chat_history.append(("user", user_message))
             
-            await websocket.send_text(fast_json_dumps({"answer": "This application is not yet ready to serve results. Please check back later.", "agent": None, "cart": persistent_cart}))
+           # await websocket.send_text(fast_json_dumps({"answer": "This application is not yet ready to serve results. Please check back later.", "agent": None, "cart": persistent_cart}))
 
-            # # Single-agent example
-            # try:
-            #     response = generate_response(user_message)
-            #     await websocket.send_text(fast_json_dumps({"answer": response, "agent": "single", "cart": persistent_cart}))
-            # except Exception as e:
-            #     logger.error("Error during single-agent response generation", exc_info=True)
-            #     await websocket.send_text(fast_json_dumps({"answer": "Error during single-agent response generation", "error": str(e), "cart": persistent_cart}))
+            # Single-agent example
+            try:
+                response = generate_response(user_message)
+                await websocket.send_text(fast_json_dumps({"answer": response, "agent": "single", "cart": persistent_cart}))
+            except Exception as e:
+                logger.error("Error during single-agent response generation", exc_info=True)
+                await websocket.send_text(fast_json_dumps({"answer": "Error during single-agent response generation", "error": str(e), "cart": persistent_cart}))
 
             # # Run handoff service
             # try:
